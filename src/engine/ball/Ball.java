@@ -1,5 +1,7 @@
 package engine.ball;
 
+import utils.Printer;
+import engine.paddle.Paddle;
 import engine.util.Angle;
 
 public class Ball
@@ -42,28 +44,45 @@ public class Ball
 	//---- LOGIC METHODS -----------------------------------------------------//
 	/**
 	 * Moves the ball one tick.
+	 * @param player1 
 	 */
-	public void move()
+	public void move(Paddle player1)
 	{
+		
 		// Calculate the addition to the coordinates.
 		double dx = speed * Math.cos(direction.getRadians());
 		double dy = speed * Math.sin(direction.getRadians());
 		
+		// Check for a collision with player 1 (left).
+		if(this.x_loc < player1.getPadding() + player1.getWidth() &&
+		   this.y_loc > player1.getY() && 
+		   this.y_loc < player1.getY() + player1.getHeight())
+		{
+			Printer.debugMessage(this.getClass(),  "Collision with left player");
+			// Make sure we are out of the bounds of the paddle.
+			this.x_loc = player1.getPadding() + player1.getWidth() + 1;
+			
+			bounce(new Angle(90));
+		}
 		// Check to see if we are hitting the walls.
 		if(this.x_loc + dx >= x_boundary || this.x_loc + dx <= 0)
 		{
+			Printer.debugMessage(this.getClass(),  String.format("(%f, %f) bounced on left/right wall", this.x_loc, this.y_loc));
 			// Reflect off the sides (90°).
 			bounce(new Angle(90));
 		}
 		if(this.y_loc + dy >= y_boundary || this.y_loc + dy <= 0)
 		{
 			// Reflect off the top or bottom (0°).
+			Printer.debugMessage(this.getClass(),  String.format("(%f, %f) bounced on floor/ceiling", this.x_loc, this.y_loc));;
 			bounce(new Angle(0));
 		}
 		
 		// Nothing hit, update the new location.
-		this.x_loc += dx;
-		this.y_loc += dy;
+		this.x_loc = Math.max(this.x_loc + dx, 0);
+		this.y_loc = Math.max(this.y_loc + dy,  0);
+		Printer.debugMessage(this.getClass(),  String.format("(%f, %f) New coordinates", this.x_loc, this.y_loc));;
+		
 	}
 	/**
 	 * Reflects the ball off of a surface. 
@@ -75,6 +94,7 @@ public class Ball
 		// Calculate new direction.
 		this.direction = surfaceAngle.multiply(2).minus(this.direction);
 		this.direction = new Angle(surfaceAngle.getDegrees() % 360);
+		Printer.debugMessage(this.getClass(), String.format("new direction: %d", this.direction.getDegrees()));
 	}
 	//---- GETTERS AND SETTERS -----------------------------------------------//
 	public int getX()

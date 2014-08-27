@@ -1,8 +1,9 @@
 package gui;
 
-import gui.board.GameBoard;
 
 import javax.swing.JFrame;
+
+import engine.board.GameBoard;
 
 
 public class Pong extends JFrame {
