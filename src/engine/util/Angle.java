@@ -1,4 +1,4 @@
-package engine;
+package engine.util;
 
 public class Angle
 {
@@ -24,6 +24,12 @@ public class Angle
 	{
 		this.degrees *= multiplier;
 		this.radians *= multiplier;
+		return this;
+	}
+	public Angle add(Double addition)
+	{
+		this.degrees += addition;
+		this.radians += addition;
 		return this;
 	}
 	public Angle minus(Angle angle)

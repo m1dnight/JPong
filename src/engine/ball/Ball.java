@@ -1,14 +1,14 @@
 package engine.ball;
 
-import engine.Angle;
+import engine.util.Angle;
 
 public class Ball
 {
 	// Constant variables.
-	private final double BALL_DEFAULT_SPEED = 3.0D;
-	// Temp variables to indicate boundaries.
-	private final int height = 300;
-	private final int width  = 300;
+	private final double BALL_DEFAULT_SPEED = 1.0D;
+
+	private int y_boundary;
+	private int x_boundary;
 	
 	private double x_loc; // X location in the plane.
 	private double y_loc; // Y location in the plane.
@@ -17,22 +17,26 @@ public class Ball
 	private Angle  direction; // Direction in radians (0 - 360 degrees).
 	
 	//---- CONSTRUCTORS ------------------------------------------------------//
-	public Ball()
+	public Ball(int x_bound, int y_bound)
 	{
 		// Initialize the ball.
-		this.speed     = BALL_DEFAULT_SPEED;
-		this.direction = Angle.randomAngle();
-		this.x_loc     = width / 2;
-		this.y_loc     = height / 2;
+		this.speed      = BALL_DEFAULT_SPEED;
+		this.direction  = Angle.randomAngle();
+		this.x_loc      = x_boundary / 2;
+		this.y_loc      = y_boundary / 2;
+		this.y_boundary = y_bound;
+		this.x_boundary = x_bound;
 	}
 	
-	public Ball(int speed, Angle direction, int x, int y)
+	public Ball(int speed, Angle direction, int x, int y, int x_bound, int y_bound)
 	{
 		// Initialize the ball.
-		this.speed     = speed;
-		this.direction = direction;
-		this.x_loc     = x;
-		this.y_loc     = y;
+		this.speed      = speed;
+		this.direction  = direction;
+		this.x_loc      = x;
+		this.y_loc      = y;
+		this.y_boundary = y_bound;
+		this.x_boundary = x_bound;
 	}
 	
 	//---- LOGIC METHODS -----------------------------------------------------//
@@ -46,12 +50,12 @@ public class Ball
 		double dy = speed * Math.sin(direction.getRadians());
 		
 		// Check to see if we are hitting the walls.
-		if(this.x_loc + dx >= width || this.x_loc + dx <= 0)
+		if(this.x_loc + dx >= x_boundary || this.x_loc + dx <= 0)
 		{
 			// Reflect off the sides (90°).
 			bounce(new Angle(90));
 		}
-		if(this.y_loc + dy >= height || this.y_loc + dy <= 0)
+		if(this.y_loc + dy >= y_boundary || this.y_loc + dy <= 0)
 		{
 			// Reflect off the top or bottom (0°).
 			bounce(new Angle(0));
@@ -124,12 +128,12 @@ public class Ball
 
 	public int getHeight()
 	{
-		return height;
+		return y_boundary;
 	}
 
 	public int getWidth()
 	{
-		return width;
+		return x_boundary;
 	}
 	
 }
