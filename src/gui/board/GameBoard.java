@@ -11,39 +11,30 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+import engine.Angle;
+import engine.ball.Ball;
 
-public class GameBoard extends JPanel implements ActionListener 
+
+public class GameBoard extends JPanel implements ActionListener, Runnable
 {
-	// Gametime variables
-	private int player1_y;
+	private static final long           serialVersionUID = 1L;
 	
-	private int ball_angle = 92; // Zero degrees = horizontal.
-	private int ball_x     = 300;
-	private int ball_y     = 250;
-	private int x_traj     = -1;
-	private int y_traj     = -1;
-	
-	// Board Size
-	private static final long serialVersionUID = 1L;
 	// Constants
-	private final int B_WIDTH        = 600; // Board width
-    private final int B_HEIGHT       = 300; // Board heigth
+	private final int BOARD_WIDTH    = 300; // Board width
+    private final int BOARD_HEIGHT   = 300; // Board heigth
     private final int BALL_SIZE      = 10;  // Size the ball
-    private final int PADDLE_WIDTH   = 5;  // Length of the paddle
-    private final int PADDLE_HEIGHT  = 45;
-    private final int PADDLE_PADDING = 5; // Padding from the side of the screen.
-    private final int REFRESH_RATE   = 10; // Rate of the timer to refresh the screen.
+    private final int REFRESH_RATE   = 1;  // Rate of the timer to refresh the screen.
     
-    private int STEP_SIZE     = 10;
-    private int BALL_STEPSIZE = 5;
+    // Runtime variables
+    private Ball ball;
     // Images
-    private Image ball;
-    private Image paddle;
+    private Image img_ball;
     
     // Private working variables
     private Timer timer;
@@ -55,20 +46,13 @@ public class GameBoard extends JPanel implements ActionListener
     {
     	// Load the images.
     	ImageIcon a = new ImageIcon(getClass().getResource("/ball.png"));
-    	ball = a.getImage();
-    	ImageIcon b = new ImageIcon(getClass().getResource("/paddle.png"));
-    	paddle = b.getImage();
-    	
-    	// Listen for keys.
-    	this.addKeyListener(new TAdapter());
+    	img_ball = a.getImage();
+    	ball = new Ball();
     	
     	// Config JPanel.
     	this.setFocusable(true); // Required for the keylistener to work.
     	this.setBackground(Color.BLACK);
-    	this.setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
-
-    	// Set initial game state.
-    	player1_y = 10;
+    	this.setPreferredSize(new Dimension(BOARD_WIDTH, BOARD_HEIGHT));
     	
     	// Configure the timer.
     	timer = new Timer(REFRESH_RATE, this);
@@ -89,162 +73,24 @@ public class GameBoard extends JPanel implements ActionListener
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// Update the trajectory of the ball.
-		updateBall();
+		ball.move();
         repaint();
 	}
     /**************************************************************************/
     /*** HELPER METHODS *******************************************************/
     /**************************************************************************/
-
     /**
      * Draw the entire gameboard.
      * @param g
      */
 	private void doDrawing(Graphics g)
 	{
-		drawScore(g);
 		// Draw the ball.
-		g.drawImage(ball, ball_x, ball_y, this);
-
-		// Draw the paddle.
-		int paddleLength = PADDLE_HEIGHT / 15;
-		for(int i = 0; i < paddleLength ; i++)
-		{
-			g.drawImage(paddle, this.PADDLE_PADDING, (i * 15 ) + player1_y, this);
-		}
+		g.drawImage(img_ball, ball.getX(), ball.getY(), this);
 		
 		Toolkit.getDefaultToolkit().sync();
 		g.dispose();
 	}
 
-	private void updateBall()
-	{
-		// http://gamedev.stackexchange.com/questions/73593/calculating-ball-trajectory-in-pong
-		// If the ball is not hitting anything, we simply move it.
-		// http://en.wikipedia.org/wiki/Polar_coordinate_system
-		if (ballHits())
-		{
-			// Bounce the ball off the wall.
-			updateTrajectory();
-		}
-		// http://en.wikipedia.org/wiki/Polar_coordinate_system
-		// Convert the angle to radians.
-		double angle = (ball_angle * Math.PI) / 180;
 
-		// Calculate the next point using polar coordinates.
-		ball_x = ball_x + (int) (x_traj * BALL_STEPSIZE * Math.cos(angle));
-		ball_y = ball_y + (int) (y_traj * BALL_STEPSIZE * Math.sin(angle));
-		System.out.printf("Ball: (%d,%d) @ %d\n", ball_x, ball_y, ball_angle);
-	}
-
-	private void updateTrajectory()
-	{
-		// Depending on the collision type, we update the variables differently.
-		System.out.printf("Ball angle changed from %d -> %d\n", ball_angle,
-				180 - ball_angle);
-		ball_angle = 180 - ball_angle;
-	}
-    private boolean ballHits()
-    {
-		// Determine paddle hitbox.
-		int paddle1_y_top   = player1_y;
-		int paddle1_x_top   = PADDLE_PADDING;
-		int paddle1_y_bottom = paddle1_y_top + PADDLE_HEIGHT;
-		int paddle1_x_bottom = paddle1_x_top + PADDLE_WIDTH;
-		
-    	// If we came out of bounds just reset it.
-    	ball_y = Math.max(0,  ball_y);
-    	ball_x = Math.max(0,  ball_x);
-    	if(ball_y > B_HEIGHT) ball_y = B_HEIGHT;
-    	if(ball_x > B_WIDTH) ball_x = B_WIDTH;
-    	// Check to see if it hits any walls.
-    	// Top
-    	if(ball_y <= 0)
-    	{
-    		System.out.println("Collision on top");
-    		y_traj *= -1;
-    		x_traj *= -1;
-    		return true;
-    	}
-    	// Left
-    	if(ball_x <= 0 || (ball_x <=  paddle1_x_bottom && ball_y > paddle1_y_top && ball_y < paddle1_y_bottom))
-    	{
-    		System.out.println("Collision on left");
-    		//y_traj *= -1;
-    		//x_traj *= -1;
-    		return true;
-    	}
-    	// Right
-    	if(ball_x >= B_WIDTH)
-    	{
-    		System.out.println("Collision on right");
-    		//y_traj *= -1;
-    		//x_traj *= -1;
-    		return true;
-    	}
-    	// Bottom
-    	if(ball_y >= B_HEIGHT)
-    	{
-    		System.out.println("Collision on bottom");
-    		y_traj *= -1;
-    		x_traj *= -1;
-    		return true;
-    	}
-    	return false;
-    }
-    private void gameOver(Graphics g) {
-
-        String msg = "Game Over";
-        Font small = new Font("Helvetica", Font.BOLD, 14);
-        FontMetrics metr = getFontMetrics(small);
-
-        g.setColor(Color.white);
-        g.setFont(small);
-        g.drawString(msg, (B_WIDTH - metr.stringWidth(msg)) / 2, B_HEIGHT / 2);
-    }
-    
-    private void drawScore(Graphics g)
-    {
-//    	String scoreMsg = "Score: " + gameState.getSnakeSize();
-//        Font small = new Font("Helvetica", Font.BOLD, 14);
-//        FontMetrics metr = getFontMetrics(small);
-//
-//        g.setColor(Color.white);
-//        g.setFont(small);
-//        g.drawString(scoreMsg,2,12);
-    }
-    /**************************************************************************/
-    /*** KEYADAPTER TO HANDLE KEYEVENTS FROM USER *****************************/
-    /**************************************************************************/
-    /**
-     * The KeyAdapter makes sure that impossible scenarios are ignored.
-     * E.g.: snake is going up and user presses down is an invalid move.
-     * @author ChristopheRosaFreddy
-     */
-	private class TAdapter extends KeyAdapter
-	{
-		@Override
-		public void keyPressed(KeyEvent e)
-		{
-			int key = e.getKeyCode();
-
-			if ((key == KeyEvent.VK_UP))
-			{
-				player1_y -= STEP_SIZE;
-				System.out.println("Player 1 X: " + player1_y);
-			}
-			if ((key == KeyEvent.VK_DOWN))
-			{
-				player1_y += STEP_SIZE;
-				System.out.println("Player 1 X: " + player1_y);
-			}
-			if((key == KeyEvent.VK_SPACE))
-			{
-				if(timer.isRunning())
-				    timer.stop();
-				else
-					timer.start();
-			}
-		}
-	}
 }

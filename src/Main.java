@@ -1,5 +1,3 @@
-package engine;
-
 import gui.Pong;
 
 public class Main {
