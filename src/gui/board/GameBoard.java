@@ -22,11 +22,11 @@ public class GameBoard extends JPanel implements ActionListener
 	// Gametime variables
 	private int player1_y;
 	
-	private int ball_angle = 45; // Zero degrees = horizontal.
-	private int ball_x     = 150;
-	private int ball_y     = 300;
-	private int x_traj     = 1;
-	private int y_traj     = 1;
+	private int ball_angle = 92; // Zero degrees = horizontal.
+	private int ball_x     = 300;
+	private int ball_y     = 250;
+	private int x_traj     = -1;
+	private int y_traj     = -1;
 	
 	// Board Size
 	private static final long serialVersionUID = 1L;
@@ -35,9 +35,9 @@ public class GameBoard extends JPanel implements ActionListener
     private final int B_HEIGHT       = 300; // Board heigth
     private final int BALL_SIZE      = 10;  // Size the ball
     private final int PADDLE_WIDTH   = 5;  // Length of the paddle
-    private final int PADDLE_HEIGHT  = 15;
+    private final int PADDLE_HEIGHT  = 45;
     private final int PADDLE_PADDING = 5; // Padding from the side of the screen.
-    private final int REFRESH_RATE   = 5; // Rate of the timer to refresh the screen.
+    private final int REFRESH_RATE   = 10; // Rate of the timer to refresh the screen.
     
     private int STEP_SIZE     = 10;
     private int BALL_STEPSIZE = 5;
@@ -107,7 +107,12 @@ public class GameBoard extends JPanel implements ActionListener
 		g.drawImage(ball, ball_x, ball_y, this);
 
 		// Draw the paddle.
-		g.drawImage(paddle, this.PADDLE_PADDING, player1_y, this);
+		int paddleLength = PADDLE_HEIGHT / 15;
+		for(int i = 0; i < paddleLength ; i++)
+		{
+			g.drawImage(paddle, this.PADDLE_PADDING, (i * 15 ) + player1_y, this);
+		}
+		
 		Toolkit.getDefaultToolkit().sync();
 		g.dispose();
 	}
@@ -141,9 +146,17 @@ public class GameBoard extends JPanel implements ActionListener
 	}
     private boolean ballHits()
     {
+		// Determine paddle hitbox.
+		int paddle1_y_top   = player1_y;
+		int paddle1_x_top   = PADDLE_PADDING;
+		int paddle1_y_bottom = paddle1_y_top + PADDLE_HEIGHT;
+		int paddle1_x_bottom = paddle1_x_top + PADDLE_WIDTH;
+		
     	// If we came out of bounds just reset it.
     	ball_y = Math.max(0,  ball_y);
     	ball_x = Math.max(0,  ball_x);
+    	if(ball_y > B_HEIGHT) ball_y = B_HEIGHT;
+    	if(ball_x > B_WIDTH) ball_x = B_WIDTH;
     	// Check to see if it hits any walls.
     	// Top
     	if(ball_y <= 0)
@@ -154,7 +167,7 @@ public class GameBoard extends JPanel implements ActionListener
     		return true;
     	}
     	// Left
-    	if(ball_x <= 0)
+    	if(ball_x <= 0 || (ball_x <=  paddle1_x_bottom && ball_y > paddle1_y_top && ball_y < paddle1_y_bottom))
     	{
     		System.out.println("Collision on left");
     		//y_traj *= -1;
@@ -218,10 +231,12 @@ public class GameBoard extends JPanel implements ActionListener
 			if ((key == KeyEvent.VK_UP))
 			{
 				player1_y -= STEP_SIZE;
+				System.out.println("Player 1 X: " + player1_y);
 			}
 			if ((key == KeyEvent.VK_DOWN))
 			{
 				player1_y += STEP_SIZE;
+				System.out.println("Player 1 X: " + player1_y);
 			}
 			if((key == KeyEvent.VK_SPACE))
 			{
