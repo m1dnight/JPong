@@ -23,10 +23,10 @@ public class GameBoard extends JPanel implements ActionListener
 	private int player1_y;
 	
 	private int ball_angle = 45; // Zero degrees = horizontal.
-	private int ball_x = 300;
-	private int ball_y = 150;
-	private int x_traj = 1;
-	private int y_traj = 1;
+	private int ball_x     = 150;
+	private int ball_y     = 300;
+	private int x_traj     = 1;
+	private int y_traj     = 1;
 	
 	// Board Size
 	private static final long serialVersionUID = 1L;
@@ -37,7 +37,7 @@ public class GameBoard extends JPanel implements ActionListener
     private final int PADDLE_WIDTH   = 5;  // Length of the paddle
     private final int PADDLE_HEIGHT  = 15;
     private final int PADDLE_PADDING = 5; // Padding from the side of the screen.
-    private final int REFRESH_RATE   = 10; // Rate of the timer to refresh the screen.
+    private final int REFRESH_RATE   = 5; // Rate of the timer to refresh the screen.
     
     private int STEP_SIZE     = 10;
     private int BALL_STEPSIZE = 5;
@@ -128,9 +128,8 @@ public class GameBoard extends JPanel implements ActionListener
 
 		// Calculate the next point using polar coordinates.
 		ball_x = ball_x + (int) (x_traj * BALL_STEPSIZE * Math.cos(angle));
-		ball_y = ball_y - (int) (y_traj * BALL_STEPSIZE * Math.sin(angle));
-		System.out.printf("Ball: (%d,%d)\n", ball_x, ball_y);
-
+		ball_y = ball_y + (int) (y_traj * BALL_STEPSIZE * Math.sin(angle));
+		System.out.printf("Ball: (%d,%d) @ %d\n", ball_x, ball_y, ball_angle);
 	}
 
 	private void updateTrajectory()
@@ -142,7 +141,9 @@ public class GameBoard extends JPanel implements ActionListener
 	}
     private boolean ballHits()
     {
-    	
+    	// If we came out of bounds just reset it.
+    	ball_y = Math.max(0,  ball_y);
+    	ball_x = Math.max(0,  ball_x);
     	// Check to see if it hits any walls.
     	// Top
     	if(ball_y <= 0)
@@ -161,13 +162,15 @@ public class GameBoard extends JPanel implements ActionListener
     		return true;
     	}
     	// Right
-    	if(ball_x + BALL_SIZE >= B_WIDTH)
+    	if(ball_x >= B_WIDTH)
     	{
     		System.out.println("Collision on right");
+    		//y_traj *= -1;
+    		//x_traj *= -1;
     		return true;
     	}
     	// Bottom
-    	if(ball_y + BALL_SIZE >= B_HEIGHT)
+    	if(ball_y >= B_HEIGHT)
     	{
     		System.out.println("Collision on bottom");
     		y_traj *= -1;
