@@ -48,20 +48,16 @@ public class Ball
 	 */
 	public void move(Paddle player1)
 	{
-		
 		// Calculate the addition to the coordinates.
 		double dx = speed * Math.cos(direction.getRadians());
 		double dy = speed * Math.sin(direction.getRadians());
-		
 		// Check for a collision with player 1 (left).
 		if(this.x_loc < player1.getPadding() + player1.getWidth() &&
 		   this.y_loc > player1.getY() && 
 		   this.y_loc < player1.getY() + player1.getHeight())
 		{
-			Printer.debugMessage(this.getClass(),  "Collision with left player");
 			// Make sure we are out of the bounds of the paddle.
-			this.x_loc = player1.getPadding() + player1.getWidth() + 1;
-			
+			this.x_loc = player1.getPadding() + player1.getWidth();
 			bounce(new Angle(90));
 		}
 		// Check to see if we are hitting the walls.
@@ -77,6 +73,9 @@ public class Ball
 			Printer.debugMessage(this.getClass(),  String.format("(%f, %f) bounced on floor/ceiling", this.x_loc, this.y_loc));;
 			bounce(new Angle(0));
 		}
+		// Recalculate the addition to the coordinates according to the new trajectory.
+		dx = speed * Math.cos(direction.getRadians());
+		dy = speed * Math.sin(direction.getRadians());
 		
 		// Nothing hit, update the new location.
 		this.x_loc = Math.max(this.x_loc + dx, 0);
