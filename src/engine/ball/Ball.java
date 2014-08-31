@@ -17,8 +17,8 @@ public class Ball implements Collision, Draw
 	private int y_boundary;
 	private int x_boundary;
 	
-	private double x_loc; // X location in the plane.
-	private double y_loc; // Y location in the plane.
+	private double x_center; // X location in the plane.
+	private double y_center; // Y location in the plane.
 	
 	private double speed;     // Double value indicating the speed of the ball. (> 1)
 	private Angle  direction; // Direction in radians (0 - 360 degrees).
@@ -31,8 +31,8 @@ public class Ball implements Collision, Draw
 		// Initialize the ball.
 		this.speed      = BALL_DEFAULT_SPEED;
 		this.direction  = Angle.randomAngle();
-		this.x_loc      = x_boundary / 2;
-		this.y_loc      = y_boundary / 2;
+		this.x_center      = x_boundary / 2;
+		this.y_center      = y_boundary / 2;
 		this.y_boundary = y_bound;
 		this.x_boundary = x_bound;
 	}
@@ -42,8 +42,8 @@ public class Ball implements Collision, Draw
 		// Initialize the ball.
 		this.speed      = speed;
 		this.direction  = direction;
-		this.x_loc      = x;
-		this.y_loc      = y;
+		this.x_center      = x;
+		this.y_center      = y;
 		this.y_boundary = y_bound;
 		this.x_boundary = x_bound;
 		this.radius = radius;
@@ -54,9 +54,9 @@ public class Ball implements Collision, Draw
 	public boolean collidesWith(Collision object)
 	{
 		// Iterate over all the points on the circumference.
-		for (int x = (int) (this.x_loc - radius); x <= this.x_loc; x++)
+		for (int x = (int) (this.x_center - radius); x <= this.x_center; x++)
 		{
-		    for (int y = (int) (this.y_loc - radius) ; y <= this.y_loc; y++)
+		    for (int y = (int) (this.y_center - radius) ; y <= this.y_center; y++)
 		    {
 		        if (inHitbox(x, y)) // we don't have to take the root, it's slow
 		        {
@@ -78,7 +78,7 @@ public class Ball implements Collision, Draw
 	public boolean inHitbox(int x, int y)
 	{
 		// Determine if given x and y coordinates are in our hitbox.
-		return Math.pow(x - this.x_loc, 2) + Math.pow(y - this.y_loc, 2) < Math.pow(this.radius, 2);
+		return Math.pow(x - this.x_center, 2) + Math.pow(y - this.y_center, 2) < Math.pow(this.radius, 2);
 	}
 	//---- DRAW INTERFACE ----------------------------------------------------///**
 	/* Draws the ball on the given graphics.
@@ -86,9 +86,12 @@ public class Ball implements Collision, Draw
 	 */
 	public void draw(Graphics g)
 	{
-		// Calculate the center of the ball.
+		// Calculate draw point.
+		double drawx = this.x_center - (radius/2);
+		double drawy = this.y_center - (radius/2);
+		
 		g.setColor(Color.white);
-		g.fillOval((int)this.x_loc, (int)this.y_loc, this.radius * 2, this.radius * 2);
+		g.fillOval((int)drawx, (int)drawy, this.radius * 2, this.radius * 2);
 	}
 	//---- LOGIC METHODS -----------------------------------------------------//
 	/**
@@ -97,61 +100,62 @@ public class Ball implements Collision, Draw
 	 */
 	public int move(Paddle player1, Paddle player2)
 	{
-		// Store current location coordinates
-		double oldX = this.x_loc;
-		double oldY = this.y_loc;
-		// Calculate the addition to the coordinates.
-		double dx = speed * Math.cos(direction.getRadians());
-		double dy = speed * Math.sin(direction.getRadians());
+		// Store current location coordinates in case of a collision.
+		double oldX = this.x_center;
+		double oldY = this.y_center;
 		
-		// Set the next coordinates to check for a collision.
-		this.x_loc += dx;
-		this.y_loc += dy;
+		// Move the ball.
+		this.updateLocation();
 		
 		// Check for a collision with player 1 (left).
 		if(player1.collidesWith(this))
 		{
-			// Make sure we are out of the bounds of the paddle.
-			//this.x_loc = player1.getX_loc() + player1.getWidth() + 1;
-			// Restore old coordinates
-			this.x_loc = oldX;
-			this.y_loc = oldY;
+			// Restore the location because the next one is a collision.
+			restoreLocation(oldX, oldY);
 			bounce(new Angle(90));
 		}
 		// Check for a collision with player 2 (right).
 		if(player2.collidesWith(this))
 		{
-			// Make sure we are out of the bounds of the paddle.
-			//this.x_loc = player2.getX_loc();
-			// Restore old coordinates
-			this.x_loc = oldX;
-			this.y_loc = oldY;
+			restoreLocation(oldX, oldY);
 			bounce(new Angle(90));
 		}
 		// Check to see if we are hitting the walls.
 		// Right wall
-		if(this.x_loc >= x_boundary)
+		if(this.x_center >= x_boundary)
 			return -1;
 		// Left wall
-		if(this.x_loc <= 0)
+		if(this.x_center <= 0)
 			return 1;
 		
-		if(this.y_loc + dy >= y_boundary || this.y_loc + dy <= 0)
+		if(this.y_center + radius >= y_boundary || this.y_center - radius <= 0)
 		{
-			// Reflect off the top or bottom (0°).
-			Printer.debugMessage(this.getClass(),  String.format("(%f, %f) bounced on floor/ceiling", this.x_loc, this.y_loc));;			// Restore old coordinates
-			this.x_loc = oldX;
-			this.y_loc = oldY;
+			restoreLocation(oldX, oldY);
 			bounce(new Angle(0));
 		}
-	
-		// Nothing hit, update the new location.
-		this.x_loc = Math.max(this.x_loc, 0);
-		this.y_loc = Math.max(this.y_loc,  0);
-		Printer.debugMessage(this.getClass(),  String.format("(%f, %f) New coordinates", this.x_loc, this.y_loc));
 		return 0;
-		
 	}
+	
+	private void updateLocation()
+	{
+		// Calculate the addition to the coordinates.
+		double dx = speed * Math.cos(direction.getRadians());
+		double dy = speed * Math.sin(direction.getRadians());
+		// Set the next coordinates to check for a collision.
+		this.x_center += dx;
+		this.y_center += dy;
+	}
+	/**
+	 * Restores the location of the ball to the given coordinates.
+	 * @param oldX
+	 * @param oldY
+	 */
+	private void restoreLocation(double oldX, double oldY)
+	{
+		this.x_center = oldX;
+		this.y_center = oldY;
+	}
+	
 	/**
 	 * Reflects the ball off of a surface. 
 	 * @param surfaceAngle Angle of the surface the ball is reflecting of
@@ -168,31 +172,31 @@ public class Ball implements Collision, Draw
 	//---- GETTERS AND SETTERS -----------------------------------------------//
 	public int getX()
 	{
-		return (int) Math.round(this.x_loc);
+		return (int) Math.round(this.x_center);
 	}
 	
 	public double getX_loc()
 	{
-		return x_loc;
+		return x_center;
 	}
 
 	public void setX_loc(double x_loc)
 	{
-		this.x_loc = x_loc;
+		this.x_center = x_loc;
 	}
 
 	public double getY_loc()
 	{
-		return y_loc;
+		return y_center;
 	}
 
 	public int getY()
 	{
-		return (int) Math.round(y_loc);
+		return (int) Math.round(y_center);
 	}
 	public void setY_loc(double y_loc)
 	{
-		this.y_loc = y_loc;
+		this.y_center = y_loc;
 	}
 
 	public double getSpeed()

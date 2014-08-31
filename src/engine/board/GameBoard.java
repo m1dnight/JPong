@@ -32,7 +32,7 @@ public class GameBoard extends JPanel implements ActionListener
     private final int PADDLE_HEIGHT  = 50;  // Size of the paddle
     private final int PADDLE_WIDTH   = 10;
     private final int PADDLE_PADDING = 10; // Padding between paddle and wall.
-    private final int REFRESH_RATE   = 2;  // Rate of the timer to refresh the screen.
+    private final int REFRESH_RATE   = 20;  // Rate of the timer to refresh the screen.
     
     // Runtime variables
     private Ball   ball;
@@ -73,6 +73,7 @@ public class GameBoard extends JPanel implements ActionListener
     	// Config JPanel.
     	this.setFocusable(true); // Required for the keylistener to work.
     	this.setBackground(Color.BLACK);
+    	this.setSize(new Dimension(BOARD_WIDTH, BOARD_HEIGHT));
     	this.setPreferredSize(new Dimension(BOARD_WIDTH, BOARD_HEIGHT));
     	
     	// Configure the timer.
@@ -132,16 +133,10 @@ public class GameBoard extends JPanel implements ActionListener
 		Toolkit.getDefaultToolkit().sync();
 		g.dispose();
 	}
-//    private void gameOver(Graphics g) {
-//
-//        String msg = "Game Over";
-//        Font small = new Font("Helvetica", Font.BOLD, 14);
-//        FontMetrics metr = getFontMetrics(small);
-//
-//        g.setColor(Color.white);
-//        g.setFont(small);
-//        g.drawString(msg, (B_WIDTH - metr.stringWidth(msg)) / 2, B_HEIGHT / 2);
-//    }
+	/**
+	 * Draws the line in the middle of the gameboard.
+	 * @param g
+	 */
 	private void drawLine(Graphics g)
 	{
 		g.setColor(Color.white);
