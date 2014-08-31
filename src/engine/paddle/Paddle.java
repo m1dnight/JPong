@@ -13,15 +13,6 @@ public class Paddle implements Collision, Draw
 	
 	// Current status variables.
 	private double y_loc;       // Y location in the plane.
-	public double getX_loc()
-	{
-		return x_loc;
-	}
-	public void setX_loc(double x_loc)
-	{
-		this.x_loc = x_loc;
-	}
-
 	private double x_loc;
 	private double speed;     // Double value indicating the speed of the ball. (> 1)
 
@@ -46,7 +37,6 @@ public class Paddle implements Collision, Draw
 		}
 		return false;
 	}
-
 	@Override
 	public boolean inHitbox(int x, int y)
 	{
@@ -62,7 +52,6 @@ public class Paddle implements Collision, Draw
 		g.fillRect((int)this.x_loc, (int)this.y_loc, width, height);
 	}
 	//---- LOGIC METHODS -----------------------------------------------------//
-
 	public void moveDown()
 	{
 		this.y_loc += 1;
@@ -73,8 +62,6 @@ public class Paddle implements Collision, Draw
 		this.y_loc -= 1;
 		
 	}
-	
-
 	//---- GETTERS AND SETTERS -----------------------------------------------//
 	public double getY_loc()
 	{
@@ -96,25 +83,20 @@ public class Paddle implements Collision, Draw
 	{
 		this.speed = speed;
 	}
-	
 	public int getHeight()
 	{
 		return height;
 	}
-
 	public void setHeight(int height)
 	{
 		this.height = height;
 	}
-
 	public int getWidth()
 	{
 		return width;
 	}
-
 	public void setWidth(int width)
 	{
 		this.width = width;
 	}
-	
 }

@@ -5,14 +5,12 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -26,13 +24,13 @@ public class GameBoard extends JPanel implements ActionListener
 	private static final long           serialVersionUID = 1L;
 	// Non final, yet constant variables.
 	// Constants
-	private final int BOARD_WIDTH    = 900; // Board width
-    private final int BOARD_HEIGHT   = 450; // Board heigth
-    private final int BALL_SIZE      = 12;  // Size the ball
+	private final int BOARD_WIDTH; // Board width
+    private final int BOARD_HEIGHT; // Board heigth
+    private final int BALL_SIZE      = 15;  // Size the ball
     private final int PADDLE_HEIGHT  = 50;  // Size of the paddle
     private final int PADDLE_WIDTH   = 10;
     private final int PADDLE_PADDING = 10; // Padding between paddle and wall.
-    private final int REFRESH_RATE   = 20;  // Rate of the timer to refresh the screen.
+    private final int REFRESH_RATE   = 2;  // Rate of the timer to refresh the screen.
     
     // Runtime variables
     private Ball   ball;
@@ -50,10 +48,17 @@ public class GameBoard extends JPanel implements ActionListener
     /**************************************************************************/
     /*** SETUP ****************************************************************/
     /**************************************************************************/
-    public GameBoard()
+    public GameBoard(int width, int height)
     {
-    	ball = new Ball(1, new Angle(190), 500, 150, BOARD_WIDTH - BALL_SIZE, 
+    	// Initialize board parameters
+    	this.BOARD_WIDTH = width;
+    	this.BOARD_HEIGHT = height;
+    	
+    	
+    	ball = new Ball(1, Angle.randomAngle(0,90).add(135), BOARD_WIDTH /2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
         	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2);
+    	ball = new Ball(1, new Angle(0), BOARD_WIDTH /2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
+	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2);
 		player1 = new Paddle(
 				BOARD_HEIGHT / 2,
 				PADDLE_PADDING,
@@ -99,12 +104,20 @@ public class GameBoard extends JPanel implements ActionListener
 		{
 			// Update the score.
 			if(out == -1)
+			{
 				score_1++;
+				// Player 1 gets to serve.
+		    	ball = new Ball(1, Angle.randomAngle(0,90).add(135), BOARD_WIDTH / 2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
+	    	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2);
+			}
 			else
+			{
 				score_2++;
+		    	ball = new Ball(1, Angle.randomAngle(0,90).add(225), BOARD_WIDTH / 2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
+	    	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2);
+			}
 			
-	    	ball = new Ball(1, Angle.randomAngle(), BOARD_WIDTH / 2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
-    	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2);
+
 		}
         repaint();
 	}
@@ -142,7 +155,6 @@ public class GameBoard extends JPanel implements ActionListener
 		g.setColor(Color.white);
 		g.fillRect((BOARD_WIDTH / 2) - 5, 0, 11, BOARD_HEIGHT);
 	}
-    
     private void drawScore(Graphics g)
     {
     	int middle = BOARD_WIDTH / 2;

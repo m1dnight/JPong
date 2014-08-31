@@ -1,5 +1,6 @@
 package engine.util;
 
+
 public class Angle
 {
 	private static final double DEG_360 = 6.28318531D;
@@ -28,8 +29,14 @@ public class Angle
 	}
 	public Angle add(Double addition)
 	{
-		this.degrees += addition;
 		this.radians += addition;
+		this.degrees = toDegrees(radians);
+		return this;
+	}
+	public Angle add(int addition)
+	{
+		this.degrees  = (this.degrees + addition) % 360;
+		this.radians = toRadians(this.degrees);
 		return this;
 	}
 	public Angle minus(Angle angle)
@@ -42,6 +49,10 @@ public class Angle
 	public static Angle randomAngle()
 	{
 		return new Angle(DEG_360 * Math.random());
+	}
+	public static Angle randomAngle(int min, int max)
+	{
+		return new Angle(Math.floor(Math.random() * (max - min + 1)) + min);
 	}
 	//---- CONVERSION METHODS ------------------------------------------------//
 	private Double toRadians(int degrees)

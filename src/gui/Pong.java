@@ -1,7 +1,6 @@
 package gui;
 
 
-import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 
 import javax.swing.JFrame;
@@ -17,7 +16,7 @@ public class Pong extends JFrame {
 	 */
 	public Pong()
 	{
-		this.add(new GameBoard());
+		this.add(new GameBoard(900,400));
 		this.setLayout(new FlowLayout());
 		setTitle("Pong");
 		pack();
