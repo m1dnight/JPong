@@ -11,7 +11,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
@@ -26,28 +25,21 @@ public class GameBoard extends JPanel implements ActionListener
 {
 	private static final long           serialVersionUID = 1L;
 	// Non final, yet constant variables.
-	private int PADDLE_IMG_HEIGHT;
-	private int PADDLE_IMG_WIDTH;
 	// Constants
-	private final int BOARD_WIDTH    = 600; // Board width
-    private final int BOARD_HEIGHT   = 300; // Board heigth
-    private final int BALL_SIZE      = 10;  // Size the ball
-    
-    private final int PADDLE_HEIGHT  = 45;
-    private final int PADDLE_WIDTH   = 15;
-    private final int PADDLE_PADDING = 50;
-
+	private final int BOARD_WIDTH    = 900; // Board width
+    private final int BOARD_HEIGHT   = 450; // Board heigth
+    private final int BALL_SIZE      = 12;  // Size the ball
+    private final int PADDLE_HEIGHT  = 50;  // Size of the paddle
+    private final int PADDLE_WIDTH   = 10;
+    private final int PADDLE_PADDING = 10; // Padding between paddle and wall.
     private final int REFRESH_RATE   = 2;  // Rate of the timer to refresh the screen.
     
     // Runtime variables
-    private Ball ball;
+    private Ball   ball;
     private Paddle player1;
     private Paddle player2;
-    
-    // Images
-    private Image img_ball;
-    private Image img_paddle;
-    
+    private int    score_1  = 0;
+    private int    score_2  = 0;
     // Private working variables
     private Timer timer;
     
@@ -60,33 +52,21 @@ public class GameBoard extends JPanel implements ActionListener
     /**************************************************************************/
     public GameBoard()
     {
-    	// Load the images.
-    	ImageIcon  a = new ImageIcon(getClass().getResource("/ball.png"));
-    	img_ball     = a.getImage();
-    	ImageIcon  b = new ImageIcon(getClass().getResource("/paddle.png"));
-    	img_paddle   = b.getImage();
-
-    	// Get the height of the image.
-    	PADDLE_IMG_HEIGHT = img_paddle.getHeight(null);
-    	PADDLE_IMG_WIDTH  = img_paddle.getWidth(null);
-    	
-    	// Init ball and paddle.
-//    	ball    = new Ball(BOARD_WIDTH - BALL_SIZE, 
-//    			           BOARD_HEIGHT - BALL_SIZE);
     	ball = new Ball(1, new Angle(190), 500, 150, BOARD_WIDTH - BALL_SIZE, 
-        	            BOARD_HEIGHT - BALL_SIZE);
+        	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2);
 		player1 = new Paddle(
-				BOARD_HEIGHT, // Height of the board
+				BOARD_HEIGHT / 2,
+				PADDLE_PADDING,
 				1.0D, // Speed of the paddle.
 				PADDLE_HEIGHT, // Height of the paddle in pixels
-				PADDLE_WIDTH, // Width of the paddle in pixels.
-				PADDLE_PADDING); // Paddle padding from wall.
+				PADDLE_WIDTH); // Paddle padding from wall.
 		player2 = new Paddle(
-				BOARD_HEIGHT, // Height of the board
+				BOARD_HEIGHT / 2,
+				BOARD_WIDTH - PADDLE_PADDING - PADDLE_WIDTH,
 				1.0D, // Speed of the paddle.
 				PADDLE_HEIGHT, // Height of the paddle in pixels
-				PADDLE_WIDTH, // Width of the paddle in pixels.
-				PADDLE_PADDING); // Paddle padding from wall.
+				PADDLE_WIDTH); // Paddle padding from wall.
+		
     	// Listen for keys.
     	this.addKeyListener(new TAdapter());
     	
@@ -99,7 +79,6 @@ public class GameBoard extends JPanel implements ActionListener
     	timer = new Timer(REFRESH_RATE, this);
     	timer.start();
     }
-    
     /**************************************************************************/
     /*** OVERRIDDEN METHODS ***************************************************/
     /**************************************************************************/
@@ -114,7 +93,18 @@ public class GameBoard extends JPanel implements ActionListener
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// Update the trajectory of the ball.
-		ball.move(player1);
+		int out = ball.move(player1, player2);
+		if(out != 0)
+		{
+			// Update the score.
+			if(out == -1)
+				score_1++;
+			else
+				score_2++;
+			
+	    	ball = new Ball(1, Angle.randomAngle(), BOARD_WIDTH / 2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
+    	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2);
+		}
         repaint();
 	}
     /**************************************************************************/
@@ -127,29 +117,49 @@ public class GameBoard extends JPanel implements ActionListener
 	private void doDrawing(Graphics g)
 	{
 		// Draw the ball.
-		g.drawImage(img_ball, ball.getX(), ball.getY(), this);
+		ball.draw(g);
 		
-		// Draw the paddle.
-		int height = 0;
-		while(height < PADDLE_HEIGHT / PADDLE_IMG_HEIGHT)
-		{
-			g.drawImage(
-					img_paddle, 
-					player1.getPadding(), 
-					(height * PADDLE_IMG_HEIGHT) +  player1.getY(), 
-					this);
-			height++;
-			
-			g.drawImage(
-					img_paddle, 
-					BOARD_WIDTH - player2.getPadding() - PADDLE_IMG_WIDTH,
-					(height * PADDLE_IMG_HEIGHT) +  player2.getY(),
-					this);
-		}
+		// Draw the paddles.
+		player1.draw(g);
+		player2.draw(g);
+		
+		// Draw the score
+		drawScore(g);
+		
+		// Draw the line.
+		drawLine(g);
 		
 		Toolkit.getDefaultToolkit().sync();
 		g.dispose();
 	}
+//    private void gameOver(Graphics g) {
+//
+//        String msg = "Game Over";
+//        Font small = new Font("Helvetica", Font.BOLD, 14);
+//        FontMetrics metr = getFontMetrics(small);
+//
+//        g.setColor(Color.white);
+//        g.setFont(small);
+//        g.drawString(msg, (B_WIDTH - metr.stringWidth(msg)) / 2, B_HEIGHT / 2);
+//    }
+	private void drawLine(Graphics g)
+	{
+		g.setColor(Color.white);
+		g.fillRect((BOARD_WIDTH / 2) - 5, 0, 11, BOARD_HEIGHT);
+	}
+    
+    private void drawScore(Graphics g)
+    {
+    	int middle = BOARD_WIDTH / 2;
+    	
+    	String scoreMsg = score_1 + " " + score_2;
+        Font big = new Font("Helvetica", Font.BOLD, 48);
+        FontMetrics metr = getFontMetrics(big);
+
+        g.setColor(Color.white);
+        g.setFont(big);
+        g.drawString(scoreMsg,(middle - (metr.stringWidth(scoreMsg) / 2)), 50);
+    }
     /**************************************************************************/
     /*** KEYADAPTER TO HANDLE KEYEVENTS FROM USER *****************************/
     /**************************************************************************/
