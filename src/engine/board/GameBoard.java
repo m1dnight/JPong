@@ -152,7 +152,7 @@ public class GameBoard extends JPanel implements ActionListener
     {
     	int middle = BOARD_WIDTH / 2;
     	
-    	String scoreMsg = score_1 + " " + score_2;
+    	String scoreMsg = String.format("%2s %-2s", score_1,score_2);
         Font big = new Font("Helvetica", Font.BOLD, 48);
         FontMetrics metr = getFontMetrics(big);
 
