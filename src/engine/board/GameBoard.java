@@ -26,11 +26,11 @@ public class GameBoard extends JPanel implements ActionListener
 	// Constants
 	private final int BOARD_WIDTH; // Board width
     private final int BOARD_HEIGHT; // Board heigth
-    private final int BALL_SIZE      = 15;  // Size the ball
+    private final int BALL_SIZE      = 10;  // Size the ball
     private final int PADDLE_HEIGHT  = 50;  // Size of the paddle
     private final int PADDLE_WIDTH   = 10;
     private final int PADDLE_PADDING = 10; // Padding between paddle and wall.
-    private final int REFRESH_RATE   = 2;  // Rate of the timer to refresh the screen.
+    private final int REFRESH_RATE   = 1;  // Rate of the timer to refresh the screen.
     
     // Runtime variables
     private Ball   ball;
