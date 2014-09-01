@@ -11,18 +11,20 @@ import engine.board.GameBoard;
 
 public class GameClient extends Thread
 {
-	private static final int PORT = 1234;
-	private InetAddress ipAddress;
+	private static final int SERVER_LISTENING_PORT = 1234;
+	private InetAddress serverIp;
 	private DatagramSocket socket;
 	private GameBoard game;
+	private String clientName;
 	
-	public GameClient(GameBoard game, String ipAddress)
+	public GameClient(String name, GameBoard game, String ipAddress)
 	{
 		this.game = game;
+		this.clientName = name;
 		try
 		{
 			this.socket = new DatagramSocket();
-			this.ipAddress = InetAddress.getByName(ipAddress);
+			this.serverIp = InetAddress.getByName(ipAddress);
 		} catch (SocketException e)
 		{
 			// TODO Auto-generated catch block
@@ -47,13 +49,17 @@ public class GameClient extends Thread
 			{
 				e.printStackTrace();
 			}
-			System.out.println("Client recevied: >> " + new String(packet.getData()));
+			String message = new String(packet.getData()).trim();
+			String sender = packet.getAddress().getHostAddress();
+			int port = packet.getPort();
+			System.out.println(String.format("%s received from %s @ %s: %s\n", clientName, sender, port, message));
+			
 		}
 	}
 	
 	public void sendData(byte[] data)
 	{
-		DatagramPacket packet = new DatagramPacket(data, data.length, ipAddress, PORT);
+		DatagramPacket packet = new DatagramPacket(data, data.length, serverIp, SERVER_LISTENING_PORT);
 		try
 		{
 			socket.send(packet);

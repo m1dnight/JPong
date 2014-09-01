@@ -10,7 +10,7 @@ import engine.board.GameBoard;
 
 public class GameServer extends Thread
 {
-	private static final int PORT = 1234;
+	private static final int SERVER_LISTENING_PORT = 1234;
 	private DatagramSocket socket;
 	private GameBoard game;
 	
@@ -19,7 +19,7 @@ public class GameServer extends Thread
 		this.game = game;
 		try
 		{
-			this.socket = new DatagramSocket(PORT);
+			this.socket = new DatagramSocket(SERVER_LISTENING_PORT);
 		} catch (SocketException e)
 		{
 			e.printStackTrace();
@@ -39,9 +39,10 @@ public class GameServer extends Thread
 			{
 				e.printStackTrace();
 			}
-			String message = new String(packet.getData());
-			System.out.println("Server received: >> " + message);
-			//if(message.trim().equalsIgnoreCase("ping"))
+			String message = new String(packet.getData()).trim();
+			String sender = packet.getAddress().getHostAddress();
+			int port = packet.getPort();
+			System.out.println(String.format("Server received from %s @ %s: %s\n", sender, port, message));
 				
 			sendData("pong".getBytes(), packet.getAddress(), packet.getPort());
 		}
