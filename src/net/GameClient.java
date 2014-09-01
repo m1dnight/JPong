@@ -53,7 +53,6 @@ public class GameClient extends Thread
 			String sender = packet.getAddress().getHostAddress();
 			int port = packet.getPort();
 			System.out.println(String.format("%s received from %s @ %s: %s\n", clientName, sender, port, message));
-			
 		}
 	}
 	

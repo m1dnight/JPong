@@ -39,12 +39,8 @@ public class GameServer extends Thread
 			{
 				e.printStackTrace();
 			}
-			String message = new String(packet.getData()).trim();
-			String sender = packet.getAddress().getHostAddress();
-			int port = packet.getPort();
-			System.out.println(String.format("Server received from %s @ %s: %s\n", sender, port, message));
-				
-			sendData("pong".getBytes(), packet.getAddress(), packet.getPort());
+			TestObject received = TestObject.deserialize(packet.getData());
+			System.out.println("Server received object with value " + received.value);
 		}
 	}
 	

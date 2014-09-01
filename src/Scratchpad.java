@@ -1,5 +1,6 @@
 import net.GameClient;
 import net.GameServer;
+import net.TestObject;
 
 
 public class Scratchpad
@@ -17,8 +18,10 @@ public class Scratchpad
 		client = new GameClient("client1", null, "localhost");
 		client.start();
 		
-		client.sendData("hello world".getBytes());
-		client2.sendData("hello world".getBytes());
+		TestObject tester = new TestObject(1234);
+		
+		client.sendData(TestObject.serialize(tester));
+		//client2.sendData("hello world".getBytes());
 		
 	}
 }
