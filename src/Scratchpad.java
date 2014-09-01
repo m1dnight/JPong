@@ -22,6 +22,16 @@ public class Scratchpad
 		
 		client.sendData(TestObject.serialize(tester));
 		//client2.sendData("hello world".getBytes());
+		try
+		{
+			Thread.sleep(500);
+		} catch (InterruptedException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.exit(0);
 		
 	}
+	
 }

@@ -6,10 +6,11 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
+import utils.Printer;
 import engine.board.GameBoard;
 
 public class GameServer extends Thread
-{
+{	private static int BUFFER_SIZE = 64000; //64k buffer
 	private static final int SERVER_LISTENING_PORT = 1234;
 	private DatagramSocket socket;
 	private GameBoard game;
@@ -30,16 +31,23 @@ public class GameServer extends Thread
 	{
 		while(true)
 		{
-			byte[] data = new byte[1024];
+			byte[] data = new byte[BUFFER_SIZE];
 			DatagramPacket packet = new DatagramPacket(data,  data.length);
 			try
 			{
 				socket.receive(packet);
+				Printer.debugMessage(this.getClass(), String.format("received %s bytes", packet.getLength()));
 			} catch (IOException e)
 			{
 				e.printStackTrace();
 			}
-			TestObject received = TestObject.deserialize(packet.getData());
+			// Truncate the data into a smaller byte array.
+			int actualSize = packet.getLength();
+			byte[] actualPacket = new byte[actualSize];
+			System.arraycopy(packet.getData(), packet.getOffset(), data, 0, packet.getLength());
+			
+			// Deserialize the object.
+			TestObject received = TestObject.deserialize(actualPacket);
 			System.out.println("Server received object with value " + received.value);
 		}
 	}

@@ -7,10 +7,12 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import utils.Printer;
 import engine.board.GameBoard;
 
 public class GameClient extends Thread
 {
+	private static int BUFFER_SIZE = 64000;
 	private static final int SERVER_LISTENING_PORT = 1234;
 	private InetAddress serverIp;
 	private DatagramSocket socket;
@@ -40,7 +42,7 @@ public class GameClient extends Thread
 	{
 		while(true)
 		{
-			byte[] data = new byte[1024];
+			byte[] data = new byte[BUFFER_SIZE];
 			DatagramPacket packet = new DatagramPacket(data,  data.length);
 			try
 			{
@@ -59,9 +61,12 @@ public class GameClient extends Thread
 	public void sendData(byte[] data)
 	{
 		DatagramPacket packet = new DatagramPacket(data, data.length, serverIp, SERVER_LISTENING_PORT);
+		
 		try
 		{
 			socket.send(packet);
+			Printer.debugMessage(this.getClass(), String.format("sent %d bytes to the server", data.length));;
+
 		} catch (IOException e)
 		{
 			e.printStackTrace();

@@ -13,11 +13,21 @@ public class TestObject implements Serializable
 	 */
 	private static final long serialVersionUID = 1L;
 	public int value;
+	public double anotherValue;
+	public byte[] fillMe;
 
 	public TestObject(int value)
 	{
 		super();
 		this.value = value;
+		fillMe = new byte[123];
+	}
+
+	public TestObject(int value, double anotherValue)
+	{
+		super();
+		this.value = value;
+		this.anotherValue = anotherValue;
 	}
 
 	public static byte[] serialize(TestObject o)
@@ -56,5 +66,4 @@ public class TestObject implements Serializable
 
 		return null;
 	}
-
 }
