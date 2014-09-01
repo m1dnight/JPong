@@ -1,7 +1,7 @@
 JPong
 =====
 <p align="center">
-<img src="https://raw.githubusercontent.com/m1dnight/JPong/master/screenshot.jpg" alt="Screenshot under Windows"/>
+<img src="https://raw.githubusercontent.com/m1dnight/JPong/master/screenshot.png" alt="Screenshot under Windows"/>
 </p>
 Pong implemented in Java.
 
