@@ -1,8 +1,12 @@
 package engine.util;
 
+import java.io.Serializable;
 
-public class Angle
+
+public class Angle implements Serializable
 {
+	private static final long serialVersionUID = -8958293345412515241L;
+
 	private static final double DEG_360 = 6.28318531D;
 	
 	private int    degrees;

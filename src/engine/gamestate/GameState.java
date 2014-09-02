@@ -1,5 +1,9 @@
 package engine.gamestate;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import engine.ball.Ball;
@@ -23,6 +27,43 @@ public class GameState implements Serializable
     {
     	this.score_2++;
     }
+    //---- SERIALIZATION ------------------------------------------------------/
+	public static byte[] serialize(GameState o)
+	{
+		try
+		{
+			ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(o);
+			oos.close();
+			// get the byte array of the object
+			byte[] obj = baos.toByteArray();
+			baos.close();
+			return obj;
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	public static GameState deserialize(byte[] data, int offset, int length)
+	{
+		try
+		{
+			ObjectInputStream iStream = new ObjectInputStream(
+					new ByteArrayInputStream(data, offset, length));
+			GameState obj = (GameState) iStream.readObject();
+			iStream.close();
+			return obj;
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
+		return null;
+	}
     //---- getters and setters ------------------------------------------------/
     public GameState(Paddle player1, Paddle player2, Ball ball)
     {

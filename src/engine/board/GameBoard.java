@@ -14,6 +14,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+import net.GameClient;
 import engine.ball.Ball;
 import engine.gamestate.GameState;
 import engine.paddle.Paddle;
@@ -34,7 +35,7 @@ public class GameBoard extends JPanel implements ActionListener
     private final int REFRESH_RATE   = 1;  // Rate of the timer to refresh the screen.
     
     // Runtime variables
-    private GameState gameState;
+    public GameState gameState;
     // Private working variables
     private Timer timer;
     
@@ -48,6 +49,7 @@ public class GameBoard extends JPanel implements ActionListener
     public GameBoard(int width, int height)
     {
     	
+    	
     	// Initialize board parameters
     	this.BOARD_WIDTH = width;
     	this.BOARD_HEIGHT = height;
@@ -56,9 +58,7 @@ public class GameBoard extends JPanel implements ActionListener
 		Ball ball = new Ball(1, Angle.randomAngle(0, 90).add(135), BOARD_WIDTH / 2,
 				BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, BOARD_HEIGHT
 						- BALL_SIZE, BALL_SIZE / 2);
-		Paddle player1 = new Paddle(BOARD_HEIGHT / 2, PADDLE_PADDING, 1.0D, // Speed of
-																		// the
-																		// paddle.
+		Paddle player1 = new Paddle(BOARD_HEIGHT / 2, PADDLE_PADDING, 1.0D,
 				PADDLE_HEIGHT, // Height of the paddle in pixels
 				PADDLE_WIDTH); // Paddle padding from wall.
 		Paddle player2 = new Paddle(BOARD_HEIGHT / 2, BOARD_WIDTH - PADDLE_PADDING
@@ -78,7 +78,14 @@ public class GameBoard extends JPanel implements ActionListener
     	
     	// Configure the timer.
     	timer = new Timer(REFRESH_RATE, this);
-    	timer.start();
+    	//timer.start();
+    	
+    	//GameServer srv = new GameServer(this);
+    	GameClient client = new GameClient("client1", this, "localhost");
+    	//srv.start();
+    	client.start();
+    	
+    	
     }
     /**************************************************************************/
     /*** OVERRIDDEN METHODS ***************************************************/

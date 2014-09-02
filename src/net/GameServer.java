@@ -7,9 +7,11 @@ import java.net.SocketException;
 
 import utils.Printer;
 import engine.board.GameBoard;
+import engine.gamestate.GameState;
+import engine.paddle.Paddle;
 
 public class GameServer extends Thread
-{	private static int BUFFER_SIZE = 64000; //64k buffer
+{	private static int BUFFER_SIZE = 1024; //64k buffer
 	private static final int SERVER_LISTENING_PORT = 1234;
 	private DatagramSocket socket;
 	private GameBoard game;
@@ -42,9 +44,14 @@ public class GameServer extends Thread
 			}
 	
 			// Deserialize the object.
-			TestObject received = TestObject.deserialize(packet.getData(), packet.getOffset(), packet.getLength()); // Does not work.
+			GameState received = GameState.deserialize(packet.getData(), packet.getOffset(), packet.getLength()); // Does not work.
+			Paddle player1 = this.game.gameState.getPlayer1();
+			this.game.gameState = received;
+			this.game.gameState.setPlayer1(player1);
 			//TestObject received = TestObject.deserialize(packet.getData()); // Works fine?
-			System.out.println("Server received object with value " + received.value);
+			System.out.println("Server received object with value " + received.getPlayer1().getY());
 		}
 	}
+
+	
 }
