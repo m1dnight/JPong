@@ -20,7 +20,7 @@ public class TestObject implements Serializable
 	{
 		super();
 		this.value = value;
-		fillMe = new byte[123];
+		fillMe = new byte[223];
 	}
 
 	public TestObject(int value, double anotherValue)
@@ -50,12 +50,12 @@ public class TestObject implements Serializable
 		return null;
 	}
 
-	public static TestObject deserialize(byte[] data)
+	public static TestObject deserialize(byte[] data, int offset, int length)
 	{
 		try
 		{
 			ObjectInputStream iStream = new ObjectInputStream(
-					new ByteArrayInputStream(data));
+					new ByteArrayInputStream(data, offset, length));
 			TestObject obj = (TestObject) iStream.readObject();
 			iStream.close();
 			return obj;

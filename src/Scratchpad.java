@@ -10,28 +10,18 @@ public class Scratchpad
 	static GameClient client2;
 	public static void main(String[] args)
 	{
+		// Start the server
 		server = new GameServer(null);
 		server.start();
-		client2 = new GameClient("client2", null, "localhost");
-		client2.start();
 		
+		// Init client (sender).
 		client = new GameClient("client1", null, "localhost");
-		client.start();
 		
+		// Create object to send.
 		TestObject tester = new TestObject(1234);
 		
+		// Send the object.
 		client.sendData(TestObject.serialize(tester));
 		//client2.sendData("hello world".getBytes());
-		try
-		{
-			Thread.sleep(500);
-		} catch (InterruptedException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		System.exit(0);
-		
 	}
-	
 }

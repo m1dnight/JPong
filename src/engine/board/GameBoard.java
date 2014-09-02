@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import engine.ball.Ball;
+import engine.gamestate.GameState;
 import engine.paddle.Paddle;
 import engine.util.Angle;
 
@@ -33,11 +34,7 @@ public class GameBoard extends JPanel implements ActionListener
     private final int REFRESH_RATE   = 1;  // Rate of the timer to refresh the screen.
     
     // Runtime variables
-    private Ball   ball;
-    private Paddle player1;
-    private Paddle player2;
-    private int    score_1  = 0;
-    private int    score_2  = 0;
+    private GameState gameState;
     // Private working variables
     private Timer timer;
     
@@ -50,28 +47,26 @@ public class GameBoard extends JPanel implements ActionListener
     /**************************************************************************/
     public GameBoard(int width, int height)
     {
+    	
     	// Initialize board parameters
     	this.BOARD_WIDTH = width;
     	this.BOARD_HEIGHT = height;
     	
     	
-    	ball = new Ball(1, Angle.randomAngle(0,90).add(135), BOARD_WIDTH /2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
-        	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2);
-    	ball = new Ball(1, new Angle(0), BOARD_WIDTH /2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
-	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2);
-		player1 = new Paddle(
-				BOARD_HEIGHT / 2,
-				PADDLE_PADDING,
-				1.0D, // Speed of the paddle.
+		Ball ball = new Ball(1, Angle.randomAngle(0, 90).add(135), BOARD_WIDTH / 2,
+				BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, BOARD_HEIGHT
+						- BALL_SIZE, BALL_SIZE / 2);
+		Paddle player1 = new Paddle(BOARD_HEIGHT / 2, PADDLE_PADDING, 1.0D, // Speed of
+																		// the
+																		// paddle.
 				PADDLE_HEIGHT, // Height of the paddle in pixels
 				PADDLE_WIDTH); // Paddle padding from wall.
-		player2 = new Paddle(
-				BOARD_HEIGHT / 2,
-				BOARD_WIDTH - PADDLE_PADDING - PADDLE_WIDTH,
-				1.0D, // Speed of the paddle.
+		Paddle player2 = new Paddle(BOARD_HEIGHT / 2, BOARD_WIDTH - PADDLE_PADDING
+				- PADDLE_WIDTH, 1.0D, // Speed of the paddle.
 				PADDLE_HEIGHT, // Height of the paddle in pixels
 				PADDLE_WIDTH); // Paddle padding from wall.
 		
+		gameState = new GameState(player1, player2, ball);
     	// Listen for keys.
     	this.addKeyListener(new TAdapter());
     	
@@ -99,22 +94,22 @@ public class GameBoard extends JPanel implements ActionListener
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// Update the trajectory of the ball.
-		int out = ball.move(player1, player2);
+		int out = gameState.getBall().move(gameState.getPlayer1(), gameState.getPlayer2());
 		if(out != 0)
 		{
 			// Update the score.
 			if(out == -1)
 			{
-				score_1++;
+				gameState.incrementScoreP1();
 				// Player 1 gets to serve.
-		    	ball = new Ball(1, Angle.randomAngle(0,90).add(135), BOARD_WIDTH / 2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
-	    	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2);
+		    	gameState.setBall(new Ball(1, Angle.randomAngle(0,90).add(135), BOARD_WIDTH / 2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
+	    	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2));
 			}
 			else
 			{
-				score_2++;
-		    	ball = new Ball(1, Angle.randomAngle(0,90).add(225), BOARD_WIDTH / 2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
-	    	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2);
+				gameState.incrementScoreP2();
+		    	gameState.setBall(new Ball(1, Angle.randomAngle(0,90).add(225), BOARD_WIDTH / 2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
+	    	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2));
 			}
 			
 
@@ -131,11 +126,11 @@ public class GameBoard extends JPanel implements ActionListener
 	private void doDrawing(Graphics g)
 	{
 		// Draw the ball.
-		ball.draw(g);
+		gameState.getBall().draw(g);
 		
 		// Draw the paddles.
-		player1.draw(g);
-		player2.draw(g);
+		gameState.getPlayer1().draw(g);
+		gameState.getPlayer2().draw(g);
 		
 		// Draw the score
 		drawScore(g);
@@ -159,7 +154,7 @@ public class GameBoard extends JPanel implements ActionListener
     {
     	int middle = BOARD_WIDTH / 2;
     	
-    	String scoreMsg = String.format("%2s %-2s", score_1,score_2);
+    	String scoreMsg = String.format("%2s %-2s", gameState.getScore_1(),gameState.getScore_2());
         Font big = new Font("Helvetica", Font.BOLD, 48);
         FontMetrics metr = getFontMetrics(big);
 
@@ -184,7 +179,7 @@ public class GameBoard extends JPanel implements ActionListener
 		
 		public TAdapter()
 		{
-			keyTimer = new Timer((int) player1.getSpeed(), this);
+			keyTimer = new Timer((int) gameState.getPlayer1().getSpeed(), this);
 		}
 		/**
 		 * Handles what has to be done every tick of
@@ -195,13 +190,13 @@ public class GameBoard extends JPanel implements ActionListener
 		public void actionPerformed(ActionEvent e)
 		{
 			if(keyUpPlayer1)
-				player1.moveUp();
+				gameState.getPlayer1().moveUp();
 			if(keyDownPlayer1)
-				player1.moveDown();
+				gameState.getPlayer1().moveDown();
 			if(keyDownPlayer2)
-				player2.moveDown();
+				gameState.getPlayer2().moveDown();
 			if(keyUpPlayer2)
-				player2.moveUp();
+				gameState.getPlayer2().moveUp();
 		}
 		@Override
 		public void keyPressed(KeyEvent e)

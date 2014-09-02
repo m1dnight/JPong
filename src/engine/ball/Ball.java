@@ -2,15 +2,18 @@ package engine.ball;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.io.Serializable;
 
 import utils.Printer;
-import engine.Collision;
-import engine.Draw;
+import engine.interfaces.Collision;
+import engine.interfaces.Draw;
 import engine.paddle.Paddle;
 import engine.util.Angle;
 
-public class Ball implements Collision, Draw
+public class Ball implements Collision, Draw, Serializable
 {
+	private static final long serialVersionUID = 7607361668258929386L;
+
 	// Constant variables.
 	private final double BALL_DEFAULT_SPEED = 1.0D;
 

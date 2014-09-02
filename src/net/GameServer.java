@@ -3,7 +3,6 @@ package net;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketException;
 
 import utils.Printer;
@@ -41,26 +40,11 @@ public class GameServer extends Thread
 			{
 				e.printStackTrace();
 			}
-			// Truncate the data into a smaller byte array.
-			int actualSize = packet.getLength();
-			byte[] actualPacket = new byte[actualSize];
-			System.arraycopy(packet.getData(), packet.getOffset(), data, 0, packet.getLength());
-			
-			// Deserialize the object.
-			TestObject received = TestObject.deserialize(actualPacket);
-			System.out.println("Server received object with value " + received.value);
-		}
-	}
 	
-	public void sendData(byte[] data, InetAddress ipAddress, int port)
-	{
-		DatagramPacket packet = new DatagramPacket(data, data.length, ipAddress, port);
-		try
-		{
-			socket.send(packet);
-		} catch (IOException e)
-		{
-			e.printStackTrace();
+			// Deserialize the object.
+			TestObject received = TestObject.deserialize(packet.getData(), packet.getOffset(), packet.getLength()); // Does not work.
+			//TestObject received = TestObject.deserialize(packet.getData()); // Works fine?
+			System.out.println("Server received object with value " + received.value);
 		}
 	}
 }

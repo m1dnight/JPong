@@ -10,7 +10,7 @@ import java.net.UnknownHostException;
 import utils.Printer;
 import engine.board.GameBoard;
 
-public class GameClient extends Thread
+public class GameClient
 {
 	private static int BUFFER_SIZE = 64000;
 	private static final int SERVER_LISTENING_PORT = 1234;
@@ -38,25 +38,6 @@ public class GameClient extends Thread
 		}
 	}
 	
-	public void run()
-	{
-		while(true)
-		{
-			byte[] data = new byte[BUFFER_SIZE];
-			DatagramPacket packet = new DatagramPacket(data,  data.length);
-			try
-			{
-				socket.receive(packet);
-			} catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-			String message = new String(packet.getData()).trim();
-			String sender = packet.getAddress().getHostAddress();
-			int port = packet.getPort();
-			System.out.println(String.format("%s received from %s @ %s: %s\n", clientName, sender, port, message));
-		}
-	}
 	
 	public void sendData(byte[] data)
 	{

@@ -2,12 +2,14 @@ package engine.paddle;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.io.Serializable;
 
-import engine.Collision;
-import engine.Draw;
+import engine.interfaces.Collision;
+import engine.interfaces.Draw;
 
-public class Paddle implements Collision, Draw
+public class Paddle implements Collision, Draw, Serializable
 {
+	private static final long serialVersionUID = -7483322353080647830L;
 	private int    height;
 	private int    width;
 	
