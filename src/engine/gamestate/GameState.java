@@ -1,11 +1,8 @@
 package engine.gamestate;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import net.packets.ReplyStatus;
 import engine.ball.Ball;
 import engine.paddle.Paddle;
 
@@ -17,6 +14,7 @@ public class GameState implements Serializable
     private Paddle player2;
     private int    score_1  = 0;
     private int    score_2  = 0;
+    private ReplyStatus gameStatus;
     
     //---- LOGIC METHODS ------------------------------------------------------/
     public void incrementScoreP1()
@@ -27,43 +25,6 @@ public class GameState implements Serializable
     {
     	this.score_2++;
     }
-    //---- SERIALIZATION ------------------------------------------------------/
-	public static byte[] serialize(GameState o)
-	{
-		try
-		{
-			ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
-			ObjectOutputStream oos = new ObjectOutputStream(baos);
-			oos.writeObject(o);
-			oos.close();
-			// get the byte array of the object
-			byte[] obj = baos.toByteArray();
-			baos.close();
-			return obj;
-		} catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-
-		return null;
-	}
-
-	public static GameState deserialize(byte[] data, int offset, int length)
-	{
-		try
-		{
-			ObjectInputStream iStream = new ObjectInputStream(
-					new ByteArrayInputStream(data, offset, length));
-			GameState obj = (GameState) iStream.readObject();
-			iStream.close();
-			return obj;
-		} catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-
-		return null;
-	}
     //---- getters and setters ------------------------------------------------/
     public GameState(Paddle player1, Paddle player2, Ball ball)
     {
@@ -120,6 +81,20 @@ public class GameState implements Serializable
 	public void setScore_2(int score_2)
 	{
 		this.score_2 = score_2;
+	}
+	/**
+	 * @return the gameStatus
+	 */
+	public ReplyStatus getGameStatus()
+	{
+		return gameStatus;
+	}
+	/**
+	 * @param gameStatus the gameStatus to set
+	 */
+	public void setGameStatus(ReplyStatus gameStatus)
+	{
+		this.gameStatus = gameStatus;
 	}
     
     

@@ -1,6 +1,6 @@
-import net.GameClient;
-import net.GameServer;
 import net.TestObject;
+import net.client.GameClient;
+import net.server.GameServer;
 
 
 public class Scratchpad
@@ -11,7 +11,7 @@ public class Scratchpad
 	public static void main(String[] args)
 	{
 		// Start the server
-		server = new GameServer(null);
+		server = new GameServer();
 		server.start();
 		
 		// Init client (sender).
