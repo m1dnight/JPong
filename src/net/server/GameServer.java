@@ -91,7 +91,8 @@ public class GameServer extends Thread
 		sendData(serialize(wrapper), recipient.getPlayerAddress(), recipient.getPlayerPort());
 	}
 	/**
-	 * Replies to a client with its connected status after the client sent the 
+	 * Replies to a client with its connected status after the client sent the
+
 	 * first packet.
 	 * @param helloClient The object containing status information.
 	 * @param senderIp Ip of the client.
