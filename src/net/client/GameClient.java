@@ -20,6 +20,7 @@ import net.server.packets.PacketWrapper;
 import org.joda.time.DateTime;
 
 import utils.Printer;
+import engine.ball.Ball;
 import engine.board.GameBoard;
 import engine.gamestate.GameState;
 import engine.paddle.Paddle;
@@ -82,6 +83,7 @@ public class GameClient extends Thread
 				GameState current = this.game.getGameState();
 				
 				receivedState.setPing(new DateTime().getMillis() - received.getMilis());
+				Ball currentBall = current.getBall();
 				if(this.game.getPlayerSide() == Side.LEFT)
 				{
 					Paddle localPlayer = this.game.getGameState().getPlayer1();
@@ -92,6 +94,7 @@ public class GameClient extends Thread
 					Paddle localPlayer = this.game.getGameState().getPlayer2();
 					receivedState.setPlayer2(localPlayer);
 				}
+				receivedState.setBall(currentBall);
 				this.game.setGameState(receivedState);
 			}
 			if(received.getData() instanceof HelloClient)
