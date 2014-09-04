@@ -15,6 +15,7 @@ public class GameState implements Serializable
     private int    score_1  = 0;
     private int    score_2  = 0;
     private ReplyStatus gameStatus;
+	private long ping;
     
     //---- LOGIC METHODS ------------------------------------------------------/
     public void incrementScoreP1()
@@ -96,7 +97,15 @@ public class GameState implements Serializable
 	{
 		this.gameStatus = gameStatus;
 	}
-    
+
+	public void setPing(long l)
+	{
+		this.ping = l;
+	}
+	public long getPing()
+	{
+		return this.ping;
+	}
     
     
 }

@@ -188,6 +188,9 @@ public class GameBoard extends JPanel implements ActionListener
 		// Draw the line.
 		drawLine(g);
 		
+		// Draw ping.
+		drawPing(g);
+		
 		Toolkit.getDefaultToolkit().sync();
 		g.dispose();
 	}
@@ -212,7 +215,16 @@ public class GameBoard extends JPanel implements ActionListener
         g.setFont(big);
         g.drawString(scoreMsg,(middle - (metr.stringWidth(scoreMsg) / 2)), 50);
     }
-    
+    private void drawPing(Graphics g)
+    {
+    	String scoreMsg = String.format("Ping: " + gameState.getPing());
+        Font big = new Font("Helvetica", Font.BOLD, 14);
+        FontMetrics metr = getFontMetrics(big);
+
+        g.setColor(Color.white);
+        g.setFont(big);
+        g.drawString(scoreMsg,10, 15);
+    }
     private void drawCenter(Graphics g, String toDraw)
     {
     	int middle = BOARD_WIDTH / 2;

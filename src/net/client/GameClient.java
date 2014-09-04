@@ -15,6 +15,10 @@ import net.packets.HelloServer;
 import net.packets.ReplyStatus;
 import net.packets.Side;
 import net.server.packets.HelloClient;
+import net.server.packets.PacketWrapper;
+
+import org.joda.time.DateTime;
+
 import utils.Printer;
 import engine.board.GameBoard;
 import engine.gamestate.GameState;
@@ -57,23 +61,26 @@ public class GameClient extends Thread
 			try
 			{
 				socket.receive(packet);
+				
 				Printer.debugMessage(this.getClass(),
 						String.format("received %s bytes", packet.getLength()));
 			} catch (IOException e)
 			{
 				e.printStackTrace();
 			}
+			// Deserialize
+			PacketWrapper received = (PacketWrapper)deserialize(packet.getData(), packet.getOffset(),
+					packet.getLength());
+			
 
-			// Deserialize the object.
-			Object received = deserialize(packet.getData(), packet.getOffset(),
-					packet.getLength()); // Does not work.
 
 			// Dispatch over the type and act accordingly.
-			if (received instanceof GameState)
+			if (received.getData() instanceof GameState)
 			{
 				// Merge the game states.
-				GameState receivedState = (GameState) received;
+				GameState receivedState = (GameState) received.getData();
 				GameState current = this.game.getGameState();
+				receivedState.setPing(new DateTime().getMillis() - received.getTimeStamp().getMillis());
 				if(this.game.getPlayerSide() == Side.LEFT)
 				{
 					Paddle localPlayer = this.game.getGameState().getPlayer1();
@@ -84,11 +91,11 @@ public class GameClient extends Thread
 					Paddle localPlayer = this.game.getGameState().getPlayer2();
 					receivedState.setPlayer2(localPlayer);
 				}
-				this.game.setGameState((GameState) received);
+				this.game.setGameState((GameState) received.getData());
 			}
-			if(received instanceof HelloClient)
+			if(received.getData() instanceof HelloClient)
 			{
-				HelloClient response = (HelloClient) received;
+				HelloClient response = (HelloClient) received.getData();
 				this.game.setPlayerSide(response.getSide());
 				if(response.getReplyStatus() == ReplyStatus.PAIRED_WITH_PLAYER)
 				{
@@ -144,7 +151,8 @@ public class GameClient extends Thread
 	 */
 	public void sendGameState()
 	{
-		sendData(serialize(this.game.getGameState()));
+		PacketWrapper wrapper = new PacketWrapper(this.game.getGameState());
+		sendData(serialize(wrapper));
 	}
 	/**
 	 * Registers the client with the server such that it can be connected to by another player.
@@ -152,7 +160,8 @@ public class GameClient extends Thread
 	public void registerWithServer()
 	{
 		HelloServer obj = new HelloServer(this.clientName, Side.LEFT);
-		sendData(serialize(obj));
+		PacketWrapper wrapper = new PacketWrapper(obj);
+		sendData(serialize(wrapper));
 	}
 	/**
 	 * Sends an array of bytes to the server.

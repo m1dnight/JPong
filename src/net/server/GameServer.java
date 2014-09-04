@@ -15,6 +15,7 @@ import net.packets.HelloServer;
 import net.packets.ReplyStatus;
 import net.packets.Side;
 import net.server.packets.HelloClient;
+import net.server.packets.PacketWrapper;
 import utils.Printer;
 import engine.board.GameBoard;
 import engine.gamestate.GameState;
@@ -53,14 +54,13 @@ public class GameServer extends Thread
 			{
 				e.printStackTrace();
 			}
-	
+			PacketWrapper wrapped = (PacketWrapper) deserialize(packet.getData(), packet.getOffset(), packet.getLength());
 			// Deserialize the object.
-			Object received = deserialize(packet.getData(), packet.getOffset(), packet.getLength()); // Does not work.
 			
 			// Dispatch gamestate to proper player.
-			if(received instanceof GameState)
+			if(wrapped.getData() instanceof GameState)
 			{
-				GameState gameState = (GameState)received;
+				GameState gameState = (GameState)wrapped.getData();
 				PlayerId sender = new PlayerId(packet.getAddress(), packet.getPort());
 				if(!players.containsKey(sender))
 				{
@@ -75,8 +75,8 @@ public class GameServer extends Thread
 					dispatchGameState(gameState, opponentData.getOponent());
 				}
 			}
-			if(received instanceof HelloServer)
-				registerPlayer(packet, received);
+			if(wrapped.getData() instanceof HelloServer)
+				registerPlayer(packet, wrapped.getData());
 		}
 	}
 	//-------------------------------------------------------------------------/
@@ -84,7 +84,8 @@ public class GameServer extends Thread
 	//-------------------------------------------------------------------------/
 	private void dispatchGameState(GameState gameState, PlayerData recipient)
 	{
-		sendData(serialize(gameState), recipient.getPlayerAddress(), recipient.getPlayerPort());
+		PacketWrapper wrapper = new PacketWrapper(gameState);
+		sendData(serialize(wrapper), recipient.getPlayerAddress(), recipient.getPlayerPort());
 	}
 	/**
 	 * Replies to a client with its connected status after the client sent the 
@@ -95,7 +96,8 @@ public class GameServer extends Thread
 	 */
 	private void sendStatusReply(HelloClient helloClient, InetAddress senderIp, int senderPort)
 	{
-		sendData(serialize(helloClient), senderIp, senderPort);
+		PacketWrapper wrapper = new PacketWrapper(helloClient);
+		sendData(serialize(wrapper), senderIp, senderPort);
 	}
 	/**
 	 * Sends an array of bytes to the given client.
