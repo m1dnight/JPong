@@ -16,6 +16,9 @@ import net.packets.ReplyStatus;
 import net.packets.Side;
 import net.server.packets.HelloClient;
 import net.server.packets.PacketWrapper;
+
+import org.joda.time.DateTime;
+
 import utils.Printer;
 import engine.board.GameBoard;
 import engine.gamestate.GameState;
@@ -72,7 +75,7 @@ public class GameServer extends Thread
 				{
 					// Get the oponent.
 					PlayerData opponentData = players.get(sender);
-					dispatchGameState(gameState, opponentData.getOponent());
+					dispatchGameState(gameState, opponentData.getOponent(), wrapped.getMilis());
 				}
 			}
 			if(wrapped.getData() instanceof HelloServer)
@@ -82,9 +85,9 @@ public class GameServer extends Thread
 	//-------------------------------------------------------------------------/
     //---- SEND METHODS -------------------------------------------------------/
 	//-------------------------------------------------------------------------/
-	private void dispatchGameState(GameState gameState, PlayerData recipient)
+	private void dispatchGameState(GameState gameState, PlayerData recipient, long lagToServer)
 	{
-		PacketWrapper wrapper = new PacketWrapper(gameState);
+		PacketWrapper wrapper = new PacketWrapper(gameState, lagToServer);
 		sendData(serialize(wrapper), recipient.getPlayerAddress(), recipient.getPlayerPort());
 	}
 	/**
@@ -96,7 +99,7 @@ public class GameServer extends Thread
 	 */
 	private void sendStatusReply(HelloClient helloClient, InetAddress senderIp, int senderPort)
 	{
-		PacketWrapper wrapper = new PacketWrapper(helloClient);
+		PacketWrapper wrapper = new PacketWrapper(helloClient, new DateTime().getMillis());
 		sendData(serialize(wrapper), senderIp, senderPort);
 	}
 	/**

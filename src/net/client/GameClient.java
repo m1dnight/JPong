@@ -81,7 +81,7 @@ public class GameClient extends Thread
 				GameState receivedState = (GameState) received.getData();
 				GameState current = this.game.getGameState();
 				
-				receivedState.setPing(new DateTime().getMillis() - received.getTimeStamp().getMillis());
+				receivedState.setPing(new DateTime().getMillis() - received.getMilis());
 				if(this.game.getPlayerSide() == Side.LEFT)
 				{
 					Paddle localPlayer = this.game.getGameState().getPlayer1();
@@ -152,7 +152,7 @@ public class GameClient extends Thread
 	 */
 	public void sendGameState()
 	{
-		PacketWrapper wrapper = new PacketWrapper(this.game.getGameState());
+		PacketWrapper wrapper = new PacketWrapper(this.game.getGameState(), new DateTime().getMillis());
 		sendData(serialize(wrapper));
 	}
 	/**
@@ -161,7 +161,7 @@ public class GameClient extends Thread
 	public void registerWithServer()
 	{
 		HelloServer obj = new HelloServer(this.clientName, Side.LEFT);
-		PacketWrapper wrapper = new PacketWrapper(obj);
+		PacketWrapper wrapper = new PacketWrapper(obj,new DateTime().getMillis());
 		sendData(serialize(wrapper));
 	}
 	/**

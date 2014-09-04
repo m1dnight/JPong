@@ -2,17 +2,16 @@ package net.server.packets;
 
 import java.io.Serializable;
 
-import org.joda.time.DateTime;
-
 public class PacketWrapper implements Serializable
 {
 	private static final long serialVersionUID = 327084766227844534L;
-	private DateTime timeStamp;
+	private long miliSeconds;
 	private Object data;
 	
-	public PacketWrapper(Object data)
+	public PacketWrapper(Object data, long miliSeconds)
 	{
-		this.timeStamp = new DateTime();
+
+		this.miliSeconds = miliSeconds;
 		this.data = data;
 	}
 
@@ -31,14 +30,22 @@ public class PacketWrapper implements Serializable
 	{
 		this.data = data;
 	}
+	/**
+	 * @return the milis
+	 */
+	public long getMilis()
+	{
+		return miliSeconds;
+	}
 
 	/**
-	 * @return the timeStamp
+	 * @param milis the milis to set
 	 */
-	public DateTime getTimeStamp()
+	public void setMilis(long milis)
 	{
-		return timeStamp;
+		this.miliSeconds = milis;
 	}
+	
 
 	
 }
