@@ -82,6 +82,9 @@ public class GameClient extends Thread
 				GameState receivedState = (GameState) received.getData();
 				GameState current = this.game.getGameState();
 				
+				// Merge scores.
+				receivedState.setScore_1(Math.max(current.getScore_1(), receivedState.getScore_1()));
+				receivedState.setScore_2(Math.max(current.getScore_2(), receivedState.getScore_2()));
 				receivedState.setPing(new DateTime().getMillis() - received.getMilis());
 				Ball currentBall = current.getBall();
 				if(this.game.getPlayerSide() == Side.LEFT)
