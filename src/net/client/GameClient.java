@@ -80,6 +80,7 @@ public class GameClient extends Thread
 				// Merge the game states.
 				GameState receivedState = (GameState) received.getData();
 				GameState current = this.game.getGameState();
+				
 				receivedState.setPing(new DateTime().getMillis() - received.getTimeStamp().getMillis());
 				if(this.game.getPlayerSide() == Side.LEFT)
 				{
@@ -91,7 +92,7 @@ public class GameClient extends Thread
 					Paddle localPlayer = this.game.getGameState().getPlayer2();
 					receivedState.setPlayer2(localPlayer);
 				}
-				this.game.setGameState((GameState) received.getData());
+				this.game.setGameState(receivedState);
 			}
 			if(received.getData() instanceof HelloClient)
 			{
