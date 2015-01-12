@@ -23,6 +23,4 @@ public class Pong extends JFrame {
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
-
-
 }

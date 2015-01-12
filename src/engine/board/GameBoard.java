@@ -11,43 +11,51 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+import net.client.GameClient;
+import net.packets.Side;
 import engine.ball.Ball;
+import engine.gamestate.GameState;
 import engine.paddle.Paddle;
 import engine.util.Angle;
 
 
 public class GameBoard extends JPanel implements ActionListener
 {
+	
 	private static final long           serialVersionUID = 1L;
 	// Non final, yet constant variables.
 	// Constants
 	private final int BOARD_WIDTH; // Board width
     private final int BOARD_HEIGHT; // Board heigth
-    private final int BALL_SIZE      = 15;  // Size the ball
+    private final int BALL_SIZE      = 10;  // Size the ball
     private final int PADDLE_HEIGHT  = 50;  // Size of the paddle
     private final int PADDLE_WIDTH   = 10;
     private final int PADDLE_PADDING = 10; // Padding between paddle and wall.
-    private final int REFRESH_RATE   = 2;  // Rate of the timer to refresh the screen.
+    private final int REFRESH_RATE   = 1;  // Rate of the timer to refresh the screen.
     
     // Runtime variables
-    private Ball   ball;
-    private Paddle player1;
-    private Paddle player2;
-    private int    score_1  = 0;
-    private int    score_2  = 0;
+    private GameState gameState;
+    private Side playerSide = Side.LEFT;
     // Private working variables
     private Timer timer;
+    private Timer syncTimer;
+    
+    // Server variables
+    private String nickName;
+    private String serverIp;
+    private GameClient serverConnection;
     
     // Key handler
     private boolean keyUpPlayer1 = false, keyDownPlayer1 = false,
     				keyUpPlayer2 = false, keyDownPlayer2 = false;
     
-    /**************************************************************************/
-    /*** SETUP ****************************************************************/
-    /**************************************************************************/
+	//-------------------------------------------------------------------------/
+    //---- SETUP --------------------------------------------------------------/
+	//-------------------------------------------------------------------------/
     public GameBoard(int width, int height)
     {
     	// Initialize board parameters
@@ -55,22 +63,26 @@ public class GameBoard extends JPanel implements ActionListener
     	this.BOARD_HEIGHT = height;
     	
     	
-    	ball = new Ball(1, Angle.randomAngle(0,90).add(135), BOARD_WIDTH /2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
-        	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2);
-    	ball = new Ball(1, new Angle(0), BOARD_WIDTH /2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
-	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2);
-		player1 = new Paddle(
-				BOARD_HEIGHT / 2,
-				PADDLE_PADDING,
-				1.0D, // Speed of the paddle.
+		Ball ball = new Ball(
+				1, 
+				Angle.randomAngle(0, 90).add(135), 
+				BOARD_WIDTH / 2,
+				BOARD_HEIGHT / 2, 
+				BOARD_WIDTH - BALL_SIZE, 
+				BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2);
+		Paddle player1 = new Paddle(
+				BOARD_HEIGHT / 2, 
+				PADDLE_PADDING, 1.0D,
 				PADDLE_HEIGHT, // Height of the paddle in pixels
 				PADDLE_WIDTH); // Paddle padding from wall.
-		player2 = new Paddle(
-				BOARD_HEIGHT / 2,
-				BOARD_WIDTH - PADDLE_PADDING - PADDLE_WIDTH,
-				1.0D, // Speed of the paddle.
-				PADDLE_HEIGHT, // Height of the paddle in pixels
-				PADDLE_WIDTH); // Paddle padding from wall.
+		Paddle player2 = new Paddle(
+				BOARD_HEIGHT / 2, 
+				BOARD_WIDTH - PADDLE_PADDING - PADDLE_WIDTH, 1.0D, // Speed of the paddle.
+				PADDLE_HEIGHT,        // Height of the paddle in pixels
+				PADDLE_WIDTH);        // Paddle padding from wall.
+		
+		// Init gamestate.
+		gameState = new GameState(player1, player2, ball);
 		
     	// Listen for keys.
     	this.addKeyListener(new TAdapter());
@@ -83,11 +95,44 @@ public class GameBoard extends JPanel implements ActionListener
     	
     	// Configure the timer.
     	timer = new Timer(REFRESH_RATE, this);
-    	timer.start();
+    	//timer.start();
+    	syncTimer = new Timer(10, new ActionListener()
+		{
+			
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				serverConnection.sendGameState();
+			}
+		});
+    	
+    	// Setup the connection with the server.
+    	setupPlayer();
     }
-    /**************************************************************************/
-    /*** OVERRIDDEN METHODS ***************************************************/
-    /**************************************************************************/
+    
+    private void setupPlayer()
+    {
+    	nickName = (String)JOptionPane.showInputDialog(null, "Player name:",
+    			"", JOptionPane.QUESTION_MESSAGE,null,null,"player"+(int)(Math.random() * 1000));
+    	serverIp = (String)JOptionPane.showInputDialog(null, "Server IP:",
+    			"", JOptionPane.QUESTION_MESSAGE,null,null,"localhost");
+    	
+    	// Init the server.
+    	this.serverConnection = new GameClient(nickName, this, serverIp);
+    	serverConnection.registerWithServer();
+    	serverConnection.start();
+    }
+	//-------------------------------------------------------------------------/
+    //---- METHODS FOR THE NET CLIENT -----------------------------------------/
+	//-------------------------------------------------------------------------/
+    public void StartGame()
+    {
+    	this.timer.start();
+    	this.syncTimer.start();
+    }
+	//-------------------------------------------------------------------------/
+    //---- OVERRIDDEN METHODS -------------------------------------------------/
+	//-------------------------------------------------------------------------/
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -99,31 +144,31 @@ public class GameBoard extends JPanel implements ActionListener
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		// Update the trajectory of the ball.
-		int out = ball.move(player1, player2);
+		int out = gameState.getBall().move(gameState.getPlayer1(), gameState.getPlayer2());
 		if(out != 0)
 		{
 			// Update the score.
 			if(out == -1)
 			{
-				score_1++;
+				gameState.incrementScoreP1();
 				// Player 1 gets to serve.
-		    	ball = new Ball(1, Angle.randomAngle(0,90).add(135), BOARD_WIDTH / 2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
-	    	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2);
+		    	gameState.setBall(new Ball(1, Angle.randomAngle(0,90).add(135), BOARD_WIDTH / 2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
+	    	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2));
 			}
 			else
 			{
-				score_2++;
-		    	ball = new Ball(1, Angle.randomAngle(0,90).add(225), BOARD_WIDTH / 2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
-	    	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2);
+				gameState.incrementScoreP2();
+		    	gameState.setBall(new Ball(1, Angle.randomAngle(0,90).add(225), BOARD_WIDTH / 2, BOARD_HEIGHT / 2, BOARD_WIDTH - BALL_SIZE, 
+	    	            BOARD_HEIGHT - BALL_SIZE, BALL_SIZE / 2));
 			}
 			
 
 		}
         repaint();
 	}
-    /**************************************************************************/
-    /*** HELPER METHODS *******************************************************/
-    /**************************************************************************/
+	//-------------------------------------------------------------------------/
+    //---- HELPERS ------------------------------------------------------------/
+	//-------------------------------------------------------------------------/
     /**
      * Draw the entire gameboard.
      * @param g
@@ -131,17 +176,20 @@ public class GameBoard extends JPanel implements ActionListener
 	private void doDrawing(Graphics g)
 	{
 		// Draw the ball.
-		ball.draw(g);
+		gameState.getBall().draw(g);
 		
 		// Draw the paddles.
-		player1.draw(g);
-		player2.draw(g);
+		gameState.getPlayer1().draw(g);
+		gameState.getPlayer2().draw(g);
 		
 		// Draw the score
 		drawScore(g);
 		
 		// Draw the line.
 		drawLine(g);
+		
+		// Draw ping.
+		drawPing(g);
 		
 		Toolkit.getDefaultToolkit().sync();
 		g.dispose();
@@ -159,7 +207,7 @@ public class GameBoard extends JPanel implements ActionListener
     {
     	int middle = BOARD_WIDTH / 2;
     	
-    	String scoreMsg = String.format("%2s %-2s", score_1,score_2);
+    	String scoreMsg = String.format("%2s %-2s", gameState.getScore_1(),gameState.getScore_2());
         Font big = new Font("Helvetica", Font.BOLD, 48);
         FontMetrics metr = getFontMetrics(big);
 
@@ -167,9 +215,29 @@ public class GameBoard extends JPanel implements ActionListener
         g.setFont(big);
         g.drawString(scoreMsg,(middle - (metr.stringWidth(scoreMsg) / 2)), 50);
     }
-    /**************************************************************************/
-    /*** KEYADAPTER TO HANDLE KEYEVENTS FROM USER *****************************/
-    /**************************************************************************/
+    private void drawPing(Graphics g)
+    {
+    	String scoreMsg = String.format("Ping: " + gameState.getPing());
+        Font big = new Font("Helvetica", Font.BOLD, 14);
+        FontMetrics metr = getFontMetrics(big);
+
+        g.setColor(Color.white);
+        g.setFont(big);
+        g.drawString(scoreMsg,10, 15);
+    }
+    private void drawCenter(Graphics g, String toDraw)
+    {
+    	int middle = BOARD_WIDTH / 2;
+    	
+        Font big = new Font("Helvetica", Font.BOLD, 48);
+        FontMetrics metr = getFontMetrics(big);
+        g.setColor(Color.RED);
+        g.setFont(big);
+        g.drawString(toDraw,(middle - (metr.stringWidth(toDraw) / 2)), 50);
+    }
+	//-------------------------------------------------------------------------/
+    //---- KEY ADAPTER TO HANDLE KEY EVENTS -----------------------------------/
+	//-------------------------------------------------------------------------/
     /**
      * The KeyAdapter makes sure that impossible scenarios are ignored.
      * E.g.: snake is going up and user presses down is an invalid move.
@@ -184,7 +252,7 @@ public class GameBoard extends JPanel implements ActionListener
 		
 		public TAdapter()
 		{
-			keyTimer = new Timer((int) player1.getSpeed(), this);
+			keyTimer = new Timer((int) gameState.getPlayer1().getSpeed(), this);
 		}
 		/**
 		 * Handles what has to be done every tick of
@@ -194,14 +262,20 @@ public class GameBoard extends JPanel implements ActionListener
 		@Override
 		public void actionPerformed(ActionEvent e)
 		{
-			if(keyUpPlayer1)
-				player1.moveUp();
-			if(keyDownPlayer1)
-				player1.moveDown();
-			if(keyDownPlayer2)
-				player2.moveDown();
-			if(keyUpPlayer2)
-				player2.moveUp();
+			if(playerSide == Side.LEFT)
+			{
+				if(keyUpPlayer1)
+					gameState.getPlayer1().moveUp();
+				if(keyDownPlayer1)
+					gameState.getPlayer1().moveDown();
+			}
+			else
+			{
+				if(keyUpPlayer1)
+					gameState.getPlayer2().moveUp();
+				if(keyDownPlayer1)
+					gameState.getPlayer2().moveDown();
+			}
 		}
 		@Override
 		public void keyPressed(KeyEvent e)
@@ -251,6 +325,41 @@ public class GameBoard extends JPanel implements ActionListener
 				keyTimer.stop();
 		}
 
+	}
+	/**
+	 * @return the gameState
+	 */
+	
+	//-------------------------------------------------------------------------/
+	//---- GETTERS AND SETTERS ------------------------------------------------/
+	//-------------------------------------------------------------------------/
+	public GameState getGameState()
+	{
+		return gameState;
+	}
+
+	/**
+	 * @param gameState the gameState to set
+	 */
+	public void setGameState(GameState gameState)
+	{
+		this.gameState = gameState;
+	}
+
+	/**
+	 * @return the playerSide
+	 */
+	public Side getPlayerSide()
+	{
+		return playerSide;
+	}
+
+	/**
+	 * @param playerSide the playerSide to set
+	 */
+	public void setPlayerSide(Side playerSide)
+	{
+		this.playerSide = playerSide;
 	}
 
 
