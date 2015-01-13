@@ -1,26 +1,18 @@
 package engine.board;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.Timer;
-
-import net.client.GameClient;
-import net.packets.Side;
 import engine.ball.Ball;
 import engine.gamestate.GameState;
 import engine.paddle.Paddle;
 import engine.util.Angle;
+import net.client.GameClient;
+import net.packets.Side;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 
 public class GameBoard extends JPanel implements ActionListener
@@ -62,7 +54,7 @@ public class GameBoard extends JPanel implements ActionListener
     	this.BOARD_WIDTH = width;
     	this.BOARD_HEIGHT = height;
     	
-    	
+    	// Setup the initial game state.
 		Ball ball = new Ball(
 				1, 
 				Angle.randomAngle(0, 90).add(135), 
